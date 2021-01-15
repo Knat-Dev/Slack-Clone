@@ -1,0 +1,11 @@
+fragment RegularTeam on Team {
+  id
+  name
+  admin
+  owner {
+    ...RegularUser
+  }
+  channels {
+    ...RegularChannel
+  }
+}

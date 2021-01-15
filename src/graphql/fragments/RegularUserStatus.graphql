@@ -1,0 +1,4 @@
+fragment RegularUserStatus on User {
+  username
+  online
+}

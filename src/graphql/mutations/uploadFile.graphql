@@ -1,0 +1,3 @@
+mutation UploadFile($file: Upload!, $teamId: String!, $channelId: String!) {
+  uploadFile(file: $file, teamId: $teamId, channelId: $channelId)
+}

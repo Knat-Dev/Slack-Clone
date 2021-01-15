@@ -1,0 +1,8 @@
+query Messages($channelId: String!, $cursor: String) {
+  messages(channelId: $channelId, cursor: $cursor) {
+    page {
+      ...RegularMessage
+    }
+    hasMore
+  }
+}

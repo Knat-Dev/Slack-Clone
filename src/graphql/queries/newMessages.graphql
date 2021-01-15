@@ -1,0 +1,5 @@
+query NewMessages($channelId: String!, $cursor: String!) {
+  newMessages(channelId: $channelId, cursor: $cursor) {
+    ...RegularMessage
+  }
+}

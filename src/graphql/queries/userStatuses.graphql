@@ -1,0 +1,6 @@
+query UserStatuses($teamId: String!) {
+  userStatuses(teamId: $teamId) {
+    online
+    username
+  }
+}

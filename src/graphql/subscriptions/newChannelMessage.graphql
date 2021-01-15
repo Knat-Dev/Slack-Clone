@@ -1,0 +1,5 @@
+subscription NewChannelMessage($channelId: String!) {
+  newChannelMessage(channelId: $channelId) {
+    ...RegularMessage
+  }
+}

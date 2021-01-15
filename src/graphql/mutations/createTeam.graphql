@@ -1,0 +1,16 @@
+mutation CreateTeam($name: String!) {
+  createTeam(name: $name) {
+    team {
+      ...RegularTeam
+    }
+    ok
+    errors {
+      field
+      message
+    }
+    ok
+    errors {
+      ...RegularError
+    }
+  }
+}

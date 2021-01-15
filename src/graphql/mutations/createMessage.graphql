@@ -1,0 +1,5 @@
+mutation CreateMessage($channelId: String!, $text: String!, $teamId: String!) {
+  createMessage(channelId: $channelId, text: $text, teamId: $teamId) {
+    ...RegularMessage
+  }
+}

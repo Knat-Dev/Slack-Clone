@@ -1,0 +1,24 @@
+mutation CreateChannel(
+  $name: String!
+  $teamId: String!
+  $public: Boolean
+  $users: [MemberMultiselect!]!
+  $dm: Boolean
+) {
+  createChannel(
+    name: $name
+    teamId: $teamId
+    public: $public
+    users: $users
+    dm: $dm
+  ) {
+    channel {
+      ...RegularChannel
+    }
+    ok
+    errors {
+      field
+      message
+    }
+  }
+}

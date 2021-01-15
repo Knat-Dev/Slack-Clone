@@ -1,0 +1,11 @@
+mutation InvitePeople($email: String!, $teamId: String!) {
+  addTeamMember(email: $email, teamId: $teamId) {
+    ok
+    errors {
+      ...RegularError
+    }
+    member {
+      ...RegularMember
+    }
+  }
+}

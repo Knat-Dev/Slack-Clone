@@ -1,0 +1,5 @@
+subscription NewUserStatus($teamId: String!) {
+  newUserStatus(teamId: $teamId) {
+    ...RegularUserStatus
+  }
+}
