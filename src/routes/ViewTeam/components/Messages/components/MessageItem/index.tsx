@@ -10,6 +10,7 @@ interface Props {
 }
 export const MessageItem: FC<Props> = ({ message, isNotSameUserAsLast }) => {
   const [hover, setHover] = useState(false);
+  const date = new Date(message.createdAt).getTime();
   return (
     <ListItem
       onMouseOver={() => {
@@ -34,7 +35,11 @@ export const MessageItem: FC<Props> = ({ message, isNotSameUserAsLast }) => {
                 {message.user.username}
               </Text>
               <Text fontSize="xs" color="#6f819b">
-                {moment(parseFloat(message.createdAt)).calendar()}
+                {moment(
+                  date === date
+                    ? message.createdAt
+                    : parseFloat(message.createdAt)
+                ).calendar()}
               </Text>
             </Flex>
             <Message message={message} />

@@ -5,6 +5,7 @@ import {
   InputLeftElement,
   InputRightElement,
 } from '@chakra-ui/react';
+import { randomBytes } from 'crypto';
 import { Form, Formik } from 'formik';
 import React, { FC, useEffect, useRef } from 'react';
 import { MdAdd, MdSend } from 'react-icons/md';
@@ -14,66 +15,88 @@ import {
   NewMessagesQuery,
   RegularChannelFragment,
   useCreateMessageMutation,
+  useMessagesQuery,
 } from '../../../../../../graphql/generated';
 interface Props {
-  selectedChannel: RegularChannelFragment | null | undefined;
+  selectedChannel: RegularChannelFragment;
   selectedTeamId: string | undefined;
   currentUserName: string;
+  currentUserId: string;
 }
 export const ChatInput: FC<Props> = ({
   selectedChannel,
   selectedTeamId,
   currentUserName,
+  currentUserId,
 }) => {
   const [createMessage] = useCreateMessageMutation();
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const { data } = useMessagesQuery({
+    variables: { channelId: selectedChannel.id, cursor: null },
+  });
   if (!selectedChannel || !selectedTeamId) return <div>hi</div>;
 
   useEffect(() => {
     if (selectedChannel) inputRef.current?.focus();
   }, [selectedChannel]);
 
+  const messages = data?.messages.page;
+  if (!messages) return null;
+  const cursor =
+    messages.length > 0 ? messages[messages.length - 1].createdAt : null;
   return (
     <Formik
       initialValues={{ text: '' }}
       onSubmit={async (values, actions) => {
         actions.setFieldValue('text', '');
-        if (selectedChannel.__typename === 'Channel') {
-          await createMessage({
-            variables: {
-              text: values.text,
+        await createMessage({
+          variables: {
+            text: values.text,
+            channelId: selectedChannel.id,
+            teamId: selectedTeamId,
+          },
+          optimisticResponse: {
+            createMessage: {
+              __typename: 'Message',
               channelId: selectedChannel.id,
-              teamId: selectedTeamId,
+              createdAt: new Date().getTime().toString(),
+              updatedAt: new Date().getTime().toString(),
+              id: '-1',
+              user: {
+                username: currentUserName,
+                id: currentUserId,
+              },
+              text: values.text,
+              filetype: null,
+              url: null,
             },
-            // optimisticResponse: {
-            //   __typename: 'Mutation',
-            //   createMessage: {
-            //     channelId: selectedChannel.id,
-            //     createdAt: new Date().getTime().toString(),
-            //     updatedAt: new Date().getTime().toString(),
-            //     id: '-1',
-            //     user: { username: currentUserName, id: '-1' },
-            //     text: values.text,
-            //   },
-            // },
-            // update: (store, { data }) => {
-            //   const oldData = store.readQuery<NewMessagesQuery>({
-            //     query: NewMessagesDocument,
-            //   });
-            //   if (data?.createMessage) {
-            //     store.writeQuery<NewMessagesQuery>({
-            //       query: NewMessagesDocument,
-            //       data: {
-            //         newMessages: [
-            //           ...(oldData?.newMessages || []),
-            //           data.createMessage,
-            //         ],
-            //       },
-            //     });
-            //   }
-            // },
-          });
-        }
+          },
+          update: (store, { data }) => {
+            const oldData = store.readQuery<NewMessagesQuery>({
+              query: NewMessagesDocument,
+              variables: {
+                channelId: selectedChannel.id,
+                cursor,
+              },
+            });
+            if (data?.createMessage) {
+              console.log(data.createMessage);
+              store.writeQuery<NewMessagesQuery>({
+                query: NewMessagesDocument,
+                variables: {
+                  channelId: selectedChannel.id,
+                  cursor,
+                },
+                data: {
+                  newMessages: [
+                    ...(oldData?.newMessages || []),
+                    data.createMessage,
+                  ],
+                },
+              });
+            }
+          },
+        });
       }}
     >
       {({ isSubmitting, handleBlur, values, handleChange }) => (

@@ -13,12 +13,14 @@ interface Props {
   selectedChannel: RegularChannelFragment | undefined | null;
   selectedTeamId: string | undefined;
   currentUserName: string;
+  currentUserId: string;
 }
 
 export const ChatWindow: FC<Props> = ({
   selectedChannel,
   selectedTeamId,
   currentUserName,
+  currentUserId,
 }) => {
   const { loading } = useMeQuery();
   const scrollable = useRef<HTMLDivElement | null>(null);
@@ -52,6 +54,7 @@ export const ChatWindow: FC<Props> = ({
         <Messages channel={selectedChannel} />
         <Box p={2}>
           <ChatInput
+            currentUserId={currentUserId}
             currentUserName={currentUserName}
             selectedChannel={selectedChannel}
             selectedTeamId={selectedTeamId}

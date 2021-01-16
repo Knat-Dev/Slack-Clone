@@ -118,6 +118,7 @@ export const ViewTeam: FC<
         </>
       ) : null}
       <ChatWindow
+        currentUserId={data.me.id}
         currentUserName={data.me.username}
         selectedChannel={selectedChannel}
         selectedTeamId={selectedTeam?.id}

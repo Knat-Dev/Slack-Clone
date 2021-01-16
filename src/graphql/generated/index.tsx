@@ -11,6 +11,8 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  /** The javascript `Date` as integer. Type represents date and time as number of milliseconds from start of UNIX epoch. */
+  Timestamp: any;
   /** The `Upload` scalar type represents a file upload. */
   Upload: any;
 };
@@ -117,9 +119,10 @@ export type Message = {
   user: User;
   channelId: Scalars['String'];
   channel: Channel;
-  createdAt: Scalars['String'];
-  updatedAt: Scalars['String'];
+  createdAt: Scalars['Timestamp'];
+  updatedAt: Scalars['Timestamp'];
 };
+
 
 export type PaginatedMessages = {
   __typename?: 'PaginatedMessages';
@@ -377,7 +380,11 @@ export type CreateMessageMutation = (
   { __typename?: 'Mutation' }
   & { createMessage?: Maybe<(
     { __typename?: 'Message' }
-    & RegularMessageFragment
+    & Pick<Message, 'id' | 'text' | 'url' | 'filetype' | 'channelId' | 'createdAt' | 'updatedAt'>
+    & { user: (
+      { __typename?: 'User' }
+      & RegularUserFragment
+    ) }
   )> }
 );
 
@@ -564,7 +571,7 @@ export type MessagesQuery = (
 
 export type NewMessagesQueryVariables = Exact<{
   channelId: Scalars['String'];
-  cursor: Scalars['String'];
+  cursor?: Maybe<Scalars['String']>;
 }>;
 
 
@@ -572,7 +579,11 @@ export type NewMessagesQuery = (
   { __typename?: 'Query' }
   & { newMessages: Array<(
     { __typename?: 'Message' }
-    & RegularMessageFragment
+    & Pick<Message, 'id' | 'text' | 'url' | 'filetype' | 'channelId' | 'createdAt' | 'updatedAt'>
+    & { user: (
+      { __typename?: 'User' }
+      & Pick<User, 'id' | 'username'>
+    ) }
   )> }
 );
 
@@ -598,7 +609,11 @@ export type NewChannelMessageSubscription = (
   { __typename?: 'Subscription' }
   & { newChannelMessage?: Maybe<(
     { __typename?: 'Message' }
-    & RegularMessageFragment
+    & Pick<Message, 'id' | 'text' | 'url' | 'filetype' | 'channelId' | 'createdAt' | 'updatedAt'>
+    & { user: (
+      { __typename?: 'User' }
+      & Pick<User, 'id' | 'username'>
+    ) }
   )> }
 );
 
@@ -744,10 +759,19 @@ export type CreateChannelMutationOptions = Apollo.BaseMutationOptions<CreateChan
 export const CreateMessageDocument = gql`
     mutation CreateMessage($channelId: String!, $text: String!, $teamId: String!) {
   createMessage(channelId: $channelId, text: $text, teamId: $teamId) {
-    ...RegularMessage
+    id
+    text
+    url
+    filetype
+    channelId
+    user {
+      ...RegularUser
+    }
+    createdAt
+    updatedAt
   }
 }
-    ${RegularMessageFragmentDoc}`;
+    ${RegularUserFragmentDoc}`;
 export type CreateMessageMutationFn = Apollo.MutationFunction<CreateMessageMutation, CreateMessageMutationVariables>;
 
 /**
@@ -1199,12 +1223,22 @@ export type MessagesQueryHookResult = ReturnType<typeof useMessagesQuery>;
 export type MessagesLazyQueryHookResult = ReturnType<typeof useMessagesLazyQuery>;
 export type MessagesQueryResult = Apollo.QueryResult<MessagesQuery, MessagesQueryVariables>;
 export const NewMessagesDocument = gql`
-    query NewMessages($channelId: String!, $cursor: String!) {
+    query NewMessages($channelId: String!, $cursor: String) {
   newMessages(channelId: $channelId, cursor: $cursor) {
-    ...RegularMessage
+    id
+    text
+    url
+    filetype
+    channelId
+    user {
+      id
+      username
+    }
+    createdAt
+    updatedAt
   }
 }
-    ${RegularMessageFragmentDoc}`;
+    `;
 
 /**
  * __useNewMessagesQuery__
@@ -1269,10 +1303,20 @@ export type UserStatusesQueryResult = Apollo.QueryResult<UserStatusesQuery, User
 export const NewChannelMessageDocument = gql`
     subscription NewChannelMessage($channelId: String!) {
   newChannelMessage(channelId: $channelId) {
-    ...RegularMessage
+    id
+    text
+    url
+    filetype
+    channelId
+    user {
+      id
+      username
+    }
+    createdAt
+    updatedAt
   }
 }
-    ${RegularMessageFragmentDoc}`;
+    `;
 
 /**
  * __useNewChannelMessageSubscription__

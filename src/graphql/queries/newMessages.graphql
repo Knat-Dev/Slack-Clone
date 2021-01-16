@@ -1,5 +1,15 @@
-query NewMessages($channelId: String!, $cursor: String!) {
+query NewMessages($channelId: String!, $cursor: String) {
   newMessages(channelId: $channelId, cursor: $cursor) {
-    ...RegularMessage
+    id
+    text
+    url
+    filetype
+    channelId
+    user {
+      id
+      username
+    }
+    createdAt
+    updatedAt
   }
 }

@@ -1,5 +1,14 @@
 mutation CreateMessage($channelId: String!, $text: String!, $teamId: String!) {
   createMessage(channelId: $channelId, text: $text, teamId: $teamId) {
-    ...RegularMessage
+    id
+    text
+    url
+    filetype
+    channelId
+    user {
+      ...RegularUser
+    }
+    createdAt
+    updatedAt
   }
 }

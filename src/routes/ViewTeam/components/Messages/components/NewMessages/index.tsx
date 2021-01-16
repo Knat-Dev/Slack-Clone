@@ -3,6 +3,7 @@ import React, { FC, useEffect } from 'react';
 import { MessageItem } from '..';
 import {
   NewChannelMessageDocument,
+  NewChannelMessageSubscription,
   RegularChannelFragment,
   useDeleteMessageMutation,
   useNewMessagesQuery,
@@ -10,13 +11,11 @@ import {
 
 interface Props {
   channel: RegularChannelFragment;
-  cursor: string;
+  cursor: string | null;
 }
 
 export const NewMessages: FC<Props> = ({ channel, cursor }) => {
-  const [deleteMessage] = useDeleteMessageMutation();
   const { data, subscribeToMore } = useNewMessagesQuery({
-    fetchPolicy: 'network-only',
     variables: {
       channelId: channel.id,
       cursor,
@@ -26,12 +25,25 @@ export const NewMessages: FC<Props> = ({ channel, cursor }) => {
   useEffect(() => {
     return subscribeToMore({
       document: NewChannelMessageDocument,
-      variables: { channelId: channel.id },
+      variables: { channelId: channel.id, cursor },
       updateQuery: (prev, { subscriptionData }) => {
         if (!subscriptionData.data) return prev;
-        return Object.assign({}, prev, {
-          newMessages: [subscriptionData.data],
-        });
+        const newMessage = (subscriptionData.data as NewChannelMessageSubscription)
+          .newChannelMessage;
+        console.log(newMessage);
+        // if current user sent the message, filter it out, we dont want to see it twice
+        if (prev.newMessages.some((message) => message.id === newMessage?.id))
+          return Object.assign({}, prev, {
+            newMessages: [...prev.newMessages],
+          });
+        else
+          return Object.assign({}, prev, {
+            newMessages: [
+              ...prev.newMessages,
+              (subscriptionData.data as NewChannelMessageSubscription)
+                .newChannelMessage,
+            ],
+          });
       },
     });
   }, [channel.id]);
@@ -39,15 +51,11 @@ export const NewMessages: FC<Props> = ({ channel, cursor }) => {
 
   if (!newMessages) return null;
 
-  const handleDelete = async (messageId: string) => {
-    await deleteMessage({ variables: { messageId } });
-  };
-
   return (
     <List w="100%">
       {newMessages.map((message, i) => {
         return (
-          <Box key={message.id} onClick={() => handleDelete(message.id)}>
+          <Box key={message.id}>
             <MessageItem
               key={i}
               message={message}

@@ -59,7 +59,7 @@ export const Messages: FC<Props> = ({ channel }) => {
       <NewMessages
         channel={channel}
         cursor={
-          messages.length > 0 ? messages[messages.length - 1].createdAt : ''
+          messages.length > 0 ? messages[messages.length - 1].createdAt : null
         }
       />
       <InfiniteScroll
