@@ -30,7 +30,6 @@ export const NewMessages: FC<Props> = ({ channel, cursor }) => {
         if (!subscriptionData.data) return prev;
         const newMessage = (subscriptionData.data as NewChannelMessageSubscription)
           .newChannelMessage;
-        console.log(newMessage);
         // if current user sent the message, filter it out, we dont want to see it twice
         if (prev.newMessages.some((message) => message.id === newMessage?.id))
           return Object.assign({}, prev, {

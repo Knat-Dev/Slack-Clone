@@ -49,6 +49,7 @@ export const ChatInput: FC<Props> = ({
       initialValues={{ text: '' }}
       onSubmit={async (values, actions) => {
         actions.setFieldValue('text', '');
+        actions.setSubmitting(false);
         await createMessage({
           variables: {
             text: values.text,
@@ -61,10 +62,11 @@ export const ChatInput: FC<Props> = ({
               channelId: selectedChannel.id,
               createdAt: new Date().getTime().toString(),
               updatedAt: new Date().getTime().toString(),
-              id: '-1',
+              id: randomBytes(12).toString('hex'),
               user: {
                 username: currentUserName,
                 id: currentUserId,
+                __typename: 'User',
               },
               text: values.text,
               filetype: null,
@@ -79,8 +81,12 @@ export const ChatInput: FC<Props> = ({
                 cursor,
               },
             });
-            if (data?.createMessage) {
-              console.log(data.createMessage);
+            if (
+              data?.createMessage &&
+              !oldData?.newMessages.some(
+                (message) => message.id === data.createMessage?.id
+              )
+            ) {
               store.writeQuery<NewMessagesQuery>({
                 query: NewMessagesDocument,
                 variables: {

@@ -10,6 +10,7 @@ interface Props {
 }
 export const MessageItem: FC<Props> = ({ message, isNotSameUserAsLast }) => {
   const [hover, setHover] = useState(false);
+  //RedisPubSub workaround, below if date === date it means it's not a float
   const date = new Date(message.createdAt).getTime();
   return (
     <ListItem
@@ -22,7 +23,7 @@ export const MessageItem: FC<Props> = ({ message, isNotSameUserAsLast }) => {
       background={hover ? 'rgb(214, 224, 230)' : undefined}
     >
       {isNotSameUserAsLast && (
-        <Flex align="start" position="relative">
+        <Flex align="start" position="relative" mt={2}>
           <Avatar
             boxSize="40px"
             src={undefined}
@@ -55,7 +56,9 @@ export const MessageItem: FC<Props> = ({ message, isNotSameUserAsLast }) => {
             left="16px"
             top="4px"
           >
-            {moment(parseFloat(message.createdAt)).format('h:mm A')}
+            {moment(
+              date === date ? message.createdAt : parseFloat(message.createdAt)
+            ).format('h:mm A')}
           </Text>
         )}
         {!isNotSameUserAsLast && (
