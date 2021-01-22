@@ -32,16 +32,10 @@ export const TeamItem: FC<Props> = ({
         <Avatar
           onClick={() => {
             setSelectedTeam(team);
-
-            if (
-              team.channels &&
-              team.channels[0] &&
-              typeof selectedChannelId === 'undefined'
-            ) {
+            if (team.channels && team.channels[0]) {
               setSelectedChannel(team.channels[0]);
               history.replace(`/view-team/${team.id}/${team.channels[0].id}`);
-            } else if (typeof selectedChannelId !== 'undefined')
-              history.replace(`/view-team/${team.id}/${selectedChannelId}`);
+            }
           }}
           backgroundColor={selectedId === team.id ? '#235699' : '#262f3b'}
           mt={2}

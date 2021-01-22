@@ -25,6 +25,7 @@ export const Login: FC<RouteComponentProps> = ({ history }) => {
                 variables: values,
                 update: (store, { data }) => {
                   if (!data?.login || data.login.errors) return null;
+                  else history.replace('/view-team');
                 },
               });
               if (response.data?.login.errors) {
@@ -35,8 +36,6 @@ export const Login: FC<RouteComponentProps> = ({ history }) => {
                   ...sessionContext,
                   isAuthenticated: true,
                 });
-
-                history.replace('/view-team');
               }
             } catch (e) {
               console.log(e.message);

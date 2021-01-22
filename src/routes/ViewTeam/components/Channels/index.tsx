@@ -77,7 +77,7 @@ export const Channels: FC<Props> = ({
 
   const handleLogout = async () => {
     await logout();
-    await client.cache.reset();
+    await client.clearStore();
     setAccessToken('');
     updateSessionContext({
       ...sessionContext,

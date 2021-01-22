@@ -27,3 +27,4 @@ firebase.json
 .firebase/hosting.YnVpbGQ.cache
 .eslintcache
 .eslintcache
+.env.production
