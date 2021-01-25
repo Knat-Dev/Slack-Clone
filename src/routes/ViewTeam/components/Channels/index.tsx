@@ -55,7 +55,6 @@ export const Channels: FC<Props> = ({
   const [logout, { client }] = useLogoutMutation();
   const { data, loading, subscribeToMore } = useUserStatusesQuery({
     variables: { teamId: selectedTeam.id },
-    fetchPolicy: 'network-only',
   });
   const history = useHistory();
   const [sessionContext, updateSessionContext] = useSessionContext();
@@ -69,7 +68,7 @@ export const Channels: FC<Props> = ({
       updateQuery: (prev, { subscriptionData }) => {
         if (!subscriptionData.data) return prev;
         return Object.assign({}, prev, {
-          userStatuses: [subscriptionData.data],
+          userStatuses: [subscriptionData.data, ...prev.userStatuses],
         });
       },
     });

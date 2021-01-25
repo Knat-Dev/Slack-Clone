@@ -334,9 +334,9 @@ const client = new ApolloClient({
           userStatuses: {
             keyArgs: ['username', 'online'],
             merge(existing, incoming: Message[]) {
-              if (!existing) return incoming;
+              return incoming;
 
-              return [...existing, ...incoming];
+              // return [...existing, ...incoming];
             },
           },
         },
