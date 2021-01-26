@@ -18,6 +18,7 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { Form, Formik } from 'formik';
+import { motion } from 'framer-motion';
 import React, { FC } from 'react';
 import { useHistory } from 'react-router';
 import Select from 'react-select';
@@ -54,6 +55,7 @@ export const AddChannelModal: FC<Props> = ({
   if (!selectedTeamId) return null;
   const [createChannel] = useCreateChannelMutation();
   const { data, loading } = useGetTeamMembersQuery({
+    skip: !isOpen,
     variables: { teamId: selectedTeamId },
     fetchPolicy: 'network-only',
   });
@@ -66,6 +68,7 @@ export const AddChannelModal: FC<Props> = ({
         onClose={onClose}
         isOpen={isOpen}
         isCentered
+        motionPreset="slideInBottom"
       >
         <ModalOverlay />
         <ModalContent>
@@ -79,7 +82,6 @@ export const AddChannelModal: FC<Props> = ({
                 users: [] as MemberMultiselect[],
               }}
               onSubmit={async (values, { setErrors }) => {
-                // console.log(values);
                 try {
                   const response = await createChannel({
                     variables: values,

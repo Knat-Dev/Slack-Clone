@@ -30,7 +30,12 @@ export const InvitePeopleModal: FC<Props> = ({
   if (!selectedTeamId) return null;
   return (
     <>
-      <Modal onClose={onClose} isOpen={isOpen} isCentered>
+      <Modal
+        onClose={onClose}
+        isOpen={isOpen}
+        isCentered
+        motionPreset="slideInBottom"
+      >
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Add people to your team</ModalHeader>

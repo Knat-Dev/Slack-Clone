@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { useDisclosure } from '@chakra-ui/react';
+import { motion } from 'framer-motion';
 import decode from 'jwt-decode';
 import React, { FC } from 'react';
 import {
@@ -80,31 +81,25 @@ export const Sidebar: FC<Props> = ({
         onDirectMessageOpen={onDirectMessageOpen}
       />
       <>
-        {directMessageOpen && (
-          <DirectMessageModal
-            isOpen={directMessageOpen}
-            onClose={onDirectMessageClose}
-            selectedTeamId={selectedTeam.id}
-            setSelectedChannel={setSelectedChannel}
-            currentUserId={getUserId()}
-          />
-        )}
-        {isOpen && (
-          <AddChannelModal
-            isOpen={isOpen}
-            onClose={onClose}
-            selectedTeamId={selectedTeam.id}
-            setSelectedChannel={setSelectedChannel}
-            currentUserId={getUserId()}
-          />
-        )}
-        {inviteOpen && (
-          <InvitePeopleModal
-            isOpen={inviteOpen}
-            onClose={onInviteClose}
-            selectedTeamId={selectedTeam.id}
-          />
-        )}
+        <DirectMessageModal
+          isOpen={directMessageOpen}
+          onClose={onDirectMessageClose}
+          selectedTeamId={selectedTeam.id}
+          setSelectedChannel={setSelectedChannel}
+          currentUserId={getUserId()}
+        />
+        <AddChannelModal
+          isOpen={isOpen}
+          onClose={onClose}
+          selectedTeamId={selectedTeam.id}
+          setSelectedChannel={setSelectedChannel}
+          currentUserId={getUserId()}
+        />
+        <InvitePeopleModal
+          isOpen={inviteOpen}
+          onClose={onInviteClose}
+          selectedTeamId={selectedTeam.id}
+        />
       </>
     </>
   );

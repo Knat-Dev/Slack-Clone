@@ -1,7 +1,0 @@
-mutation UploadFileDirect(
-  $file: Upload!
-  $teamId: String!
-  $receiverId: String!
-) {
-  uploadFileDirect(file: $file, teamId: $teamId, receiverId: $receiverId)
-}

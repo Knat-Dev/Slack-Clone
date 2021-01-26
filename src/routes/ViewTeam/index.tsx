@@ -60,7 +60,6 @@ export const ViewTeam: FC<
           }
           // Direct Messages
         } else if (index !== -1 && match.params.userId) {
-          console.log('direct messaging path');
           if (
             data.me.teams[index] &&
             typeof data.me.teams[index].channels !== 'undefined'
@@ -104,6 +103,7 @@ export const ViewTeam: FC<
 
   if (loading || meLoading) return null;
   if (!data?.me.teams?.length) return <Redirect to="/create-team" />;
+  if (!selectedTeam) return null;
   return (
     <AppLayout mediaQuery={isLargerThan880}>
       {isLargerThan880 ? (
@@ -121,7 +121,7 @@ export const ViewTeam: FC<
         currentUserId={data.me.id}
         currentUserName={data.me.username}
         selectedChannel={selectedChannel}
-        selectedTeamId={selectedTeam?.id}
+        selectedTeamId={selectedTeam.id}
       />
     </AppLayout>
   );

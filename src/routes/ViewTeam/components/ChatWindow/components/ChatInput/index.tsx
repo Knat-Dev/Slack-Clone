@@ -11,8 +11,8 @@ import React, { FC, useEffect, useRef } from 'react';
 import { MdAdd, MdSend } from 'react-icons/md';
 import { FileUpload } from '../../../../../../Components';
 import {
-  NewMessagesDocument,
-  NewMessagesQuery,
+  MessagesDocument,
+  MessagesQuery,
   RegularChannelFragment,
   useCreateMessageMutation,
   useMessagesQuery,
@@ -42,8 +42,6 @@ export const ChatInput: FC<Props> = ({
 
   const messages = data?.messages.page;
   if (!messages) return null;
-  const cursor =
-    messages.length > 0 ? messages[messages.length - 1].createdAt : null;
   return (
     <Formik
       initialValues={{ text: '' }}
@@ -74,30 +72,34 @@ export const ChatInput: FC<Props> = ({
             },
           },
           update: (store, { data }) => {
-            const oldData = store.readQuery<NewMessagesQuery>({
-              query: NewMessagesDocument,
+            const oldData = store.readQuery<MessagesQuery>({
+              query: MessagesDocument,
               variables: {
                 channelId: selectedChannel.id,
-                cursor,
+                cursor: null,
               },
             });
             if (
               data?.createMessage &&
-              !oldData?.newMessages.some(
+              oldData?.messages &&
+              !oldData?.messages.page.some(
                 (message) => message.id === data.createMessage?.id
               )
             ) {
-              store.writeQuery<NewMessagesQuery>({
-                query: NewMessagesDocument,
+              store.writeQuery<MessagesQuery>({
+                query: MessagesDocument,
                 variables: {
                   channelId: selectedChannel.id,
-                  cursor,
+                  cursor: null,
                 },
                 data: {
-                  newMessages: [
-                    ...(oldData?.newMessages || []),
-                    data.createMessage,
-                  ],
+                  messages: {
+                    ...oldData.messages,
+                    page: [
+                      ...(oldData.messages.page || []),
+                      data.createMessage,
+                    ],
+                  },
                 },
               });
             }

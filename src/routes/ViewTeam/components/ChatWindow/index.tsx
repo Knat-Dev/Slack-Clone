@@ -1,17 +1,21 @@
+import { useApolloClient } from '@apollo/client';
 import { Box, Flex, Text } from '@chakra-ui/react';
-import React, { FC, useRef } from 'react';
+import React, { FC, useEffect, useRef } from 'react';
 import { Messages } from '..';
 import { FileUpload } from '../../../../Components';
 import {
+  NewUserStatusDocument,
+  NewUserStatusSubscription,
   RegularChannelFragment,
   useMeQuery,
+  useUserStatusesQuery,
 } from '../../../../graphql/generated';
 import { Header } from '../Header';
 import { ChatInput } from './components';
 
 interface Props {
   selectedChannel: RegularChannelFragment | undefined | null;
-  selectedTeamId: string | undefined;
+  selectedTeamId: string;
   currentUserName: string;
   currentUserId: string;
 }
@@ -24,6 +28,40 @@ export const ChatWindow: FC<Props> = ({
 }) => {
   const { loading } = useMeQuery();
   const scrollable = useRef<HTMLDivElement | null>(null);
+  const { subscribeToMore } = useUserStatusesQuery({
+    variables: { teamId: selectedTeamId },
+  });
+
+  // fetch user statuses when teamId changes
+  const client = useApolloClient();
+  useEffect(() => {
+    client.cache.evict({ fieldName: 'userStatuses' });
+  }, [selectedTeamId]);
+
+  useEffect(() => {
+    return subscribeToMore({
+      document: NewUserStatusDocument,
+      variables: { teamId: selectedTeamId },
+      updateQuery: (prev, { subscriptionData }) => {
+        if (!subscriptionData.data) return prev;
+        console.log(subscriptionData.data);
+        const newStatus = (subscriptionData.data as NewUserStatusSubscription)
+          .newUserStatus;
+        if (newStatus)
+          return Object.assign({}, prev, {
+            ...prev,
+            userStatuses: prev.userStatuses
+              .filter((status) => status.username !== newStatus?.username)
+              .concat(newStatus),
+          });
+        else
+          return Object.assign({}, prev, {
+            ...prev,
+            userStatuses: prev.userStatuses,
+          });
+      },
+    });
+  }, [selectedTeamId]);
 
   if (loading) return null;
 

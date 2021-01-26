@@ -1,0 +1,5 @@
+subscription DeletedMessage($channelId: String!) {
+  deletedMessage(channelId: $channelId) {
+    ...RegularMessage
+  }
+}

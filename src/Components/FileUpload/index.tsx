@@ -3,8 +3,6 @@ import React, { FC, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import {
   RegularChannelFragment,
-  RegularUserFragment,
-  useUploadFileDirectMutation,
   useUploadFileMutation,
 } from '../../graphql/generated';
 
@@ -31,7 +29,6 @@ export const FileUpload: FC<Props> = ({
       file.name = f.name;
       if (file) {
         try {
-          console.log(to);
           await uploadFile({ variables: { file, teamId, channelId } });
         } catch (e) {
           console.log(e);

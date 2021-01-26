@@ -39,8 +39,9 @@ export const DirectMessageModal: FC<Props> = ({
 }) => {
   const history = useHistory();
   if (!selectedTeamId) return null;
-  const [createChannel] = useCreateChannelMutation();
+  const [createChannel, { client }] = useCreateChannelMutation();
   const { data, loading } = useGetTeamMembersQuery({
+    skip: !isOpen,
     fetchPolicy: 'network-only',
     variables: { teamId: selectedTeamId },
   });
@@ -52,6 +53,7 @@ export const DirectMessageModal: FC<Props> = ({
         onClose={onClose}
         isOpen={isOpen}
         isCentered
+        motionPreset="slideInBottom"
       >
         <ModalOverlay />
         <ModalContent>
@@ -132,6 +134,10 @@ export const DirectMessageModal: FC<Props> = ({
                           });
                         }
                       },
+                    });
+                    client.cache.evict({
+                      fieldName: 'userStatuses',
+                      args: { teamId: selectedTeamId },
                     });
                     const newChannel = res.data?.createChannel.channel;
                     if (newChannel) {

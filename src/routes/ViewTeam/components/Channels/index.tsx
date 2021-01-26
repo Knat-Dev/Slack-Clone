@@ -9,7 +9,6 @@ import {
 } from '@chakra-ui/react';
 import React, { FC, useEffect } from 'react';
 import { MdAdd } from 'react-icons/md';
-import { useHistory } from 'react-router';
 import { CircleIconButton } from '../../../../Components';
 import { useSessionContext } from '../../../../context/SessionContext';
 import {
@@ -53,26 +52,13 @@ export const Channels: FC<Props> = ({
   currentUserName,
 }) => {
   const [logout, { client }] = useLogoutMutation();
-  const { data, loading, subscribeToMore } = useUserStatusesQuery({
+  const { data } = useUserStatusesQuery({
+    fetchPolicy: 'cache-only',
     variables: { teamId: selectedTeam.id },
   });
-  const history = useHistory();
   const [sessionContext, updateSessionContext] = useSessionContext();
 
   const { loading: meLoading, data: meData } = useMeQuery();
-
-  useEffect(() => {
-    return subscribeToMore({
-      document: NewUserStatusDocument,
-      variables: { teamId: selectedTeam.id },
-      updateQuery: (prev, { subscriptionData }) => {
-        if (!subscriptionData.data) return prev;
-        return Object.assign({}, prev, {
-          userStatuses: [subscriptionData.data, ...prev.userStatuses],
-        });
-      },
-    });
-  }, [selectedTeam.id]);
 
   const handleLogout = async () => {
     await logout();
