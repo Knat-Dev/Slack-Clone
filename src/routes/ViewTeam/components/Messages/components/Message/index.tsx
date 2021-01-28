@@ -1,18 +1,32 @@
-import { AspectRatio, Box, Image, Text } from '@chakra-ui/react';
+import { AspectRatio, Image } from '@chakra-ui/react';
 import React, { FC } from 'react';
 import { RegularMessageFragment } from '../../../../../../graphql/generated';
+import { TextMessage } from './components';
 
 interface Props {
   message: RegularMessageFragment;
+  editing: boolean;
+  setEditing: React.Dispatch<React.SetStateAction<boolean>>;
+  handleEdit: (message: RegularMessageFragment, text: string) => Promise<void>;
 }
 
-export const Message: FC<Props> = ({ message }) => {
+export const Message: FC<Props> = ({
+  message,
+  editing,
+  setEditing,
+  handleEdit,
+}) => {
   const { filetype, url } = message;
 
   return (
-    <>
+    <div key={message.id}>
       {message.text || !url ? (
-        <Text color="#40455e">{message.text}</Text>
+        <TextMessage
+          editing={editing}
+          handleEdit={handleEdit}
+          message={message}
+          setEditing={setEditing}
+        />
       ) : filetype?.includes('image') ? (
         <AspectRatio ratio={4 / 3} maxH={400} maxW={400}>
           <Image src={url} alt={message.user.username} />
@@ -24,6 +38,6 @@ export const Message: FC<Props> = ({ message }) => {
       ) : (
         <div>unknown type</div>
       )}
-    </>
+    </div>
   );
 };

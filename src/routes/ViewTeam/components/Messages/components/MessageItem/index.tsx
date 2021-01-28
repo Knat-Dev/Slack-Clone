@@ -1,34 +1,32 @@
-import { DeleteIcon, EditIcon } from '@chakra-ui/icons';
 import { Avatar, Box, Flex, ListItem, Text } from '@chakra-ui/react';
 import moment from 'moment';
 import React, { FC, useState } from 'react';
+import { MdDelete, MdEdit } from 'react-icons/md';
 import { Message } from '..';
 import { CircleIconButton } from '../../../../../../Components';
-import {
-  RegularChannelFragment,
-  RegularMessageFragment,
-} from '../../../../../../graphql/generated';
-import { MdEdit, MdDelete } from 'react-icons/md';
+import { RegularMessageFragment } from '../../../../../../graphql/generated';
 
 interface Props {
   currentUserId: string;
   message: RegularMessageFragment;
   isNotSameUserAsLast: boolean;
   handleDelete: (message: RegularMessageFragment) => Promise<void>;
+  handleEdit: (message: RegularMessageFragment, text: string) => Promise<void>;
 }
 export const MessageItem: FC<Props> = ({
   currentUserId,
   message,
   isNotSameUserAsLast,
   handleDelete,
+  handleEdit,
 }) => {
   const [hover, setHover] = useState(false);
+  const [editing, setEditing] = useState(false);
   //RedisPubSub workaround, below if date === date it means it's not a float
   const date = new Date(message.createdAt).getTime();
   return (
     <ListItem
-      mt={isNotSameUserAsLast ? 2 : undefined}
-      py="0.1rem"
+      mt={isNotSameUserAsLast ? 1 : undefined}
       position="relative"
       onMouseOver={() => {
         if (!hover) setHover(true);
@@ -59,8 +57,13 @@ export const MessageItem: FC<Props> = ({
                 ).calendar()}
               </Text>
             </Flex>
-            <Box w="100%">
-              <Message message={message} />
+            <Box w="100%" pr="100px">
+              <Message
+                message={message}
+                editing={editing}
+                setEditing={setEditing}
+                handleEdit={handleEdit}
+              />
             </Box>
           </Flex>
         </Flex>
@@ -72,14 +75,15 @@ export const MessageItem: FC<Props> = ({
             fontSize="xs"
             color="#6f819b"
             left="16px"
-            top="5px"
+            // top="5px"
+            lineHeight="calc(24px + 2 * 0.1rem)"
           >
             {moment(
               date === date ? message.createdAt : parseFloat(message.createdAt)
             ).format('h:mm A')}
           </Text>
         )}
-        {hover && currentUserId === message.user.id && (
+        {!editing && hover && currentUserId === message.user.id && (
           <Flex
             background=" rgba(230, 235, 241, 0.733)"
             boxSizing="content-box"
@@ -101,18 +105,26 @@ export const MessageItem: FC<Props> = ({
               mr={1}
               onClick={() => handleDelete(message)}
             />
-            <CircleIconButton
-              color="white"
-              size="regular"
-              icon={MdEdit}
-              label="Edit Message.."
-              placement="top"
-            />
+            {message.text && (
+              <CircleIconButton
+                color="white"
+                size="regular"
+                icon={MdEdit}
+                label="Edit Message.."
+                placement="top"
+                onClick={() => setEditing(true)}
+              />
+            )}
           </Flex>
         )}
         {!isNotSameUserAsLast && (
           <Box w="100%" pl="72px" pr="100px">
-            <Message message={message} />
+            <Message
+              message={message}
+              editing={editing}
+              setEditing={setEditing}
+              handleEdit={handleEdit}
+            />
           </Box>
         )}
       </Flex>

@@ -121,7 +121,11 @@ export const ViewTeam: FC<
         currentUserId={data.me.id}
         currentUserName={data.me.username}
         selectedChannel={selectedChannel}
+        setSelectedChannel={startSetSelectedChannel}
+        selectedTeam={selectedTeam}
         selectedTeamId={selectedTeam.id}
+        setSelectedTeam={startSetSelectedTeam}
+        me={data.me}
       />
     </AppLayout>
   );

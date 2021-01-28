@@ -44,8 +44,9 @@ export const DirectMessageModal: FC<Props> = ({
     skip: !isOpen,
     fetchPolicy: 'network-only',
     variables: { teamId: selectedTeamId },
+    notifyOnNetworkStatusChange: true,
   });
-  if (!selectedTeamId || !data) return null;
+  if (!selectedTeamId || loading) return null;
   return (
     <>
       <Modal
@@ -135,12 +136,12 @@ export const DirectMessageModal: FC<Props> = ({
                         }
                       },
                     });
-                    client.cache.evict({
-                      fieldName: 'userStatuses',
-                      args: { teamId: selectedTeamId },
-                    });
                     const newChannel = res.data?.createChannel.channel;
                     if (newChannel) {
+                      client.cache.evict({
+                        fieldName: 'userStatuses',
+                        args: { teamId: selectedTeamId },
+                      });
                       onClose();
 
                       setSelectedChannel(newChannel);
@@ -194,13 +195,13 @@ export const DirectMessageModal: FC<Props> = ({
                         name="color"
                         value={values.selection}
                         onChange={(value) => {
-                          const user = data.getTeamMembers.find(
+                          const user = data?.getTeamMembers.find(
                             (_user) => _user.id === value?.value
                           );
                           setFieldValue('user', user);
                           setFieldValue('selection', value);
                         }}
-                        options={data.getTeamMembers
+                        options={data?.getTeamMembers
                           .filter((member) => member.id !== currentUserId)
                           .map((member) => ({
                             label: member.username,

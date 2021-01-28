@@ -25,7 +25,6 @@ import { ListItem } from './components/ListItem';
 
 interface Props {
   teamName: string | undefined;
-  username: string;
   channels: (RegularChannelFragment | null | undefined)[] | null | undefined;
   dmChannels: RegularChannelFragment[] | null | undefined;
 
@@ -36,11 +35,11 @@ interface Props {
   onDirectMessageOpen: () => void;
   selectedTeam: RegularTeamFragment;
   currentUserName: string;
+  closeDrawer?: () => void;
 }
 
 export const Channels: FC<Props> = ({
   teamName,
-  username,
   channels,
   dmChannels,
   setSelectedChannel,
@@ -50,6 +49,7 @@ export const Channels: FC<Props> = ({
   onDirectMessageOpen,
   selectedTeam,
   currentUserName,
+  closeDrawer,
 }) => {
   const [logout, { client }] = useLogoutMutation();
   const { data } = useUserStatusesQuery({
@@ -77,7 +77,7 @@ export const Channels: FC<Props> = ({
       <Box ml={4} mt={2}>
         <Menu>
           <MenuButton as={Text} color="white" cursor="pointer">
-            {username}
+            {currentUserName}
           </MenuButton>
           <MenuList minWidth={100} p={0}>
             <MenuItem onClick={handleLogout}>
@@ -120,6 +120,7 @@ export const Channels: FC<Props> = ({
                 selectedChannel={selectedChannel}
                 setSelectedChannel={setSelectedChannel}
                 selectedTeamId={selectedTeam?.id}
+                closeDrawer={closeDrawer}
               />
             )
           )}
@@ -162,6 +163,7 @@ export const Channels: FC<Props> = ({
                       .filter((username) => username !== currentUserName)[0]
                 );
               })}
+              closeDrawer={closeDrawer}
             />
           ))}
       </List>

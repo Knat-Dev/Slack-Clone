@@ -4,6 +4,8 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import {
   DeletedMessageDocument,
   DeletedMessageSubscription,
+  EditedMessageDocument,
+  EditedMessageSubscription,
   MessagesDocument,
   MessagesQuery,
   NewChannelMessageDocument,
@@ -11,6 +13,7 @@ import {
   RegularChannelFragment,
   RegularMessageFragment,
   useDeleteMessageMutation,
+  useEditMessageMutation,
   useMeQuery,
   useMessagesQuery,
 } from '../../../../graphql/generated';
@@ -24,6 +27,7 @@ export const Messages: FC<Props> = ({ channel }) => {
   const bottom = useRef<HTMLDivElement>(null);
   const scrollable = useRef<HTMLDivElement>(null);
   const [deleteMessage] = useDeleteMessageMutation();
+  const [editMessage] = useEditMessageMutation();
   const { data, fetchMore, subscribeToMore, client } = useMessagesQuery({
     variables: { channelId: channel.id, cursor: null },
   });
@@ -95,6 +99,30 @@ export const Messages: FC<Props> = ({ channel }) => {
     });
   }, [channel.id]);
 
+  useEffect(() => {
+    return subscribeToMore({
+      document: EditedMessageDocument,
+      variables: { channelId: channel.id },
+      updateQuery: (prev, { subscriptionData }) => {
+        if (!subscriptionData.data) return prev;
+        const editedMessage = (subscriptionData.data as EditedMessageSubscription)
+          .editedMessage;
+
+        return Object.assign({}, prev, {
+          messages: {
+            ...prev.messages,
+            page: prev.messages.page.map((message) => {
+              if (message.id === editedMessage?.id) {
+                return editedMessage;
+              }
+              return message;
+            }),
+          },
+        });
+      },
+    });
+  }, [channel.id]);
+
   const messages = data?.messages.page;
   const hasMore = data?.messages.hasMore;
   if (!messages || !meData?.me.id)
@@ -137,8 +165,51 @@ export const Messages: FC<Props> = ({ channel }) => {
     });
   };
 
-  const fetchMoreData = async () => {
-    await fetchMore({
+  const handleEdit = async (message: RegularMessageFragment, text: string) => {
+    console.log(text);
+    console.log(message);
+
+    await editMessage({
+      variables: { messageId: message.id, text },
+      optimisticResponse: {
+        editMessage: {
+          ...message,
+          text,
+          edited: true,
+        },
+      },
+      update: (store, { data }) => {
+        const old = store.readQuery<MessagesQuery>({
+          query: MessagesDocument,
+          variables: { channelId: channel.id },
+        });
+        const editedMessage = data?.editMessage;
+        if (old && editedMessage) {
+          if (
+            old.messages.page.some((message) => message.id === editedMessage.id)
+          )
+            store.writeQuery<MessagesQuery>({
+              query: MessagesDocument,
+              variables: { channelId: channel.id },
+              data: {
+                messages: {
+                  ...old.messages,
+                  page: old.messages.page.map((message) => {
+                    if (message.id === editedMessage.id) {
+                      return editedMessage;
+                    }
+                    return message;
+                  }),
+                },
+              },
+            });
+        }
+      },
+    });
+  };
+
+  const fetchMoreData = () => {
+    fetchMore({
       query: MessagesDocument,
       variables: {
         channelId: channel.id,
@@ -163,7 +234,7 @@ export const Messages: FC<Props> = ({ channel }) => {
 
       <InfiniteScroll
         dataLength={messages.length}
-        next={() => fetchMoreData()}
+        next={fetchMoreData}
         style={{ display: 'flex', flexDirection: 'column-reverse' }} //To put endMessage and loader to the top.
         inverse={true}
         hasMore={hasMore ? hasMore : false}
@@ -194,6 +265,7 @@ export const Messages: FC<Props> = ({ channel }) => {
           {messages.map((message, i) => (
             <Box key={message.id}>
               <MessageItem
+                handleEdit={handleEdit}
                 handleDelete={handleDelete}
                 currentUserId={meData.me.id}
                 message={message}

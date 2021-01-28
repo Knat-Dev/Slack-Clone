@@ -1,15 +1,9 @@
-import {
-  IconButton,
-  Input,
-  InputGroup,
-  InputLeftElement,
-  InputRightElement,
-} from '@chakra-ui/react';
+import { IconButton, InputGroup, InputRightElement } from '@chakra-ui/react';
 import { randomBytes } from 'crypto';
 import { Form, Formik } from 'formik';
-import React, { FC, useEffect, useRef } from 'react';
-import { MdAdd, MdSend } from 'react-icons/md';
-import { FileUpload } from '../../../../../../Components';
+import React, { FC, useRef } from 'react';
+import { MdSend } from 'react-icons/md';
+import { AutoResizeTextarea } from '../../../../../../Components/AutoResizeTextarea';
 import {
   MessagesDocument,
   MessagesQuery,
@@ -30,15 +24,11 @@ export const ChatInput: FC<Props> = ({
   currentUserId,
 }) => {
   const [createMessage] = useCreateMessageMutation();
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const { data } = useMessagesQuery({
     variables: { channelId: selectedChannel.id, cursor: null },
   });
-  if (!selectedChannel || !selectedTeamId) return <div>hi</div>;
-
-  useEffect(() => {
-    if (selectedChannel) inputRef.current?.focus();
-  }, [selectedChannel]);
+  if (!selectedChannel || !selectedTeamId) return null;
 
   const messages = data?.messages.page;
   if (!messages) return null;
@@ -48,6 +38,7 @@ export const ChatInput: FC<Props> = ({
       onSubmit={async (values, actions) => {
         actions.setFieldValue('text', '');
         actions.setSubmitting(false);
+        if (!values.text.trim()) return false;
         await createMessage({
           variables: {
             text: values.text,
@@ -61,6 +52,7 @@ export const ChatInput: FC<Props> = ({
               createdAt: new Date().getTime().toString(),
               updatedAt: new Date().getTime().toString(),
               id: randomBytes(12).toString('hex'),
+              edited: false,
               user: {
                 username: currentUserName,
                 id: currentUserId,
@@ -107,25 +99,10 @@ export const ChatInput: FC<Props> = ({
         });
       }}
     >
-      {({ isSubmitting, handleBlur, values, handleChange }) => (
+      {({ isSubmitting, handleBlur, values, handleChange, handleSubmit }) => (
         <Form>
           <InputGroup alignItems="center">
-            <InputLeftElement>
-              <FileUpload
-                to={selectedChannel}
-                channelId={selectedChannel.id}
-                teamId={selectedTeamId}
-              >
-                <IconButton
-                  colorScheme="blue"
-                  aria-label="upload file"
-                  size="sm"
-                >
-                  <MdAdd />
-                </IconButton>
-              </FileUpload>
-            </InputLeftElement>
-            <InputRightElement>
+            <InputRightElement bottom="0" top="auto">
               <IconButton
                 isLoading={isSubmitting}
                 colorScheme="blue"
@@ -136,7 +113,29 @@ export const ChatInput: FC<Props> = ({
                 <MdSend />
               </IconButton>
             </InputRightElement>
-            <Input
+            <AutoResizeTextarea
+              ref={inputRef}
+              autoFocus
+              onKeyPress={(e) => {
+                if (!e.shiftKey && e.key === 'Enter' && values.text.trim()) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  return handleSubmit();
+                }
+              }}
+              name="text"
+              value={values.text}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              placeholder={`Message #${selectedChannel.name
+                .split(', ')
+                .filter((name) => name !== currentUserName)}`}
+            />
+            {/* <Textarea
+              minH="40px"
+              px="40px"
+              maxRows={2}
+              resize="none"
               ref={inputRef}
               backgroundColor="white"
               value={values.text}
@@ -149,7 +148,8 @@ export const ChatInput: FC<Props> = ({
                 .split(', ')
                 .filter((name) => name !== currentUserName)}`}
               autoComplete="off"
-            />
+              as={ResizeTextarea as typeof TextareaAutosize & 'symbol'}
+            /> */}
           </InputGroup>
         </Form>
       )}

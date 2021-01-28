@@ -1,12 +1,25 @@
 import { useApolloClient } from '@apollo/client';
-import { Box, Flex, Text } from '@chakra-ui/react';
+import {
+  Box,
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerHeader,
+  DrawerOverlay,
+  Flex,
+  Text,
+  useDisclosure,
+} from '@chakra-ui/react';
 import React, { FC, useEffect, useRef } from 'react';
 import { Messages } from '..';
 import { FileUpload } from '../../../../Components';
+import { Sidebar } from '../../../../containers';
 import {
+  MeQuery,
   NewUserStatusDocument,
   NewUserStatusSubscription,
   RegularChannelFragment,
+  RegularTeamFragment,
   useMeQuery,
   useUserStatusesQuery,
 } from '../../../../graphql/generated';
@@ -15,17 +28,26 @@ import { ChatInput } from './components';
 
 interface Props {
   selectedChannel: RegularChannelFragment | undefined | null;
+  setSelectedChannel: (channel: RegularChannelFragment) => void;
+  selectedTeam: RegularTeamFragment;
   selectedTeamId: string;
+  setSelectedTeam: (team: RegularTeamFragment) => void;
   currentUserName: string;
   currentUserId: string;
+  me: MeQuery['me'];
 }
 
 export const ChatWindow: FC<Props> = ({
   selectedChannel,
+  setSelectedChannel,
+  selectedTeam,
   selectedTeamId,
+  setSelectedTeam,
   currentUserName,
   currentUserId,
+  me,
 }) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const { loading } = useMeQuery();
   const scrollable = useRef<HTMLDivElement | null>(null);
   const { subscribeToMore } = useUserStatusesQuery({
@@ -85,6 +107,7 @@ export const ChatWindow: FC<Props> = ({
     >
       <Flex direction="column" h="100vh" backgroundColor="#d6e0e6b3">
         <Header
+          onOpen={onOpen}
           currentUserName={currentUserName}
           channelName={selectedChannel.name}
         />
@@ -99,6 +122,28 @@ export const ChatWindow: FC<Props> = ({
           />
         </Box>
       </Flex>
+      <Drawer
+        placement="left"
+        onClose={onClose}
+        isOpen={isOpen}
+        returnFocusOnClose={false}
+        onOverlayClick={() => onClose()}
+      >
+        <DrawerOverlay>
+          <DrawerContent maxW="300px">
+            <DrawerBody p={0}>
+              <Sidebar
+                isDrawer={onClose}
+                setSelectedChannel={setSelectedChannel}
+                setSelectedTeam={setSelectedTeam}
+                selectedChannel={selectedChannel}
+                selectedTeam={selectedTeam}
+                me={me}
+              />
+            </DrawerBody>
+          </DrawerContent>
+        </DrawerOverlay>
+      </Drawer>
     </FileUpload>
   );
 };

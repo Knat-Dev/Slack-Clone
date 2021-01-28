@@ -105,6 +105,7 @@ export type Message = {
   channel: Channel;
   createdAt: Scalars['String'];
   updatedAt: Scalars['String'];
+  edited: Scalars['Boolean'];
 };
 
 export type PaginatedMessages = {
@@ -125,6 +126,7 @@ export type Mutation = {
   createMessage?: Maybe<Message>;
   uploadFile: Scalars['Boolean'];
   deleteMessage?: Maybe<Message>;
+  editMessage?: Maybe<Message>;
 };
 
 
@@ -184,6 +186,12 @@ export type MutationDeleteMessageArgs = {
   messageId: Scalars['String'];
 };
 
+
+export type MutationEditMessageArgs = {
+  text: Scalars['String'];
+  messageId: Scalars['String'];
+};
+
 export type RegisterResponse = {
   __typename?: 'RegisterResponse';
   ok?: Maybe<Scalars['Boolean']>;
@@ -235,6 +243,7 @@ export type Subscription = {
   newUserStatus?: Maybe<User>;
   newChannelMessage?: Maybe<Message>;
   deletedMessage?: Maybe<Message>;
+  editedMessage?: Maybe<Message>;
 };
 
 
@@ -249,6 +258,11 @@ export type SubscriptionNewChannelMessageArgs = {
 
 
 export type SubscriptionDeletedMessageArgs = {
+  channelId: Scalars['String'];
+};
+
+
+export type SubscriptionEditedMessageArgs = {
   channelId: Scalars['String'];
 };
 
@@ -269,7 +283,7 @@ export type RegularMemberFragment = (
 
 export type RegularMessageFragment = (
   { __typename?: 'Message' }
-  & Pick<Message, 'id' | 'text' | 'url' | 'filetype' | 'channelId' | 'createdAt' | 'updatedAt'>
+  & Pick<Message, 'id' | 'text' | 'url' | 'filetype' | 'channelId' | 'edited' | 'createdAt' | 'updatedAt'>
   & { user: (
     { __typename?: 'User' }
     & RegularUserFragment
@@ -333,11 +347,7 @@ export type CreateMessageMutation = (
   { __typename?: 'Mutation' }
   & { createMessage?: Maybe<(
     { __typename?: 'Message' }
-    & Pick<Message, 'id' | 'text' | 'url' | 'filetype' | 'channelId' | 'createdAt' | 'updatedAt'>
-    & { user: (
-      { __typename?: 'User' }
-      & RegularUserFragment
-    ) }
+    & RegularMessageFragment
   )> }
 );
 
@@ -370,6 +380,20 @@ export type DeleteMessageMutationVariables = Exact<{
 export type DeleteMessageMutation = (
   { __typename?: 'Mutation' }
   & { deleteMessage?: Maybe<(
+    { __typename?: 'Message' }
+    & RegularMessageFragment
+  )> }
+);
+
+export type EditMessageMutationVariables = Exact<{
+  messageId: Scalars['String'];
+  text: Scalars['String'];
+}>;
+
+
+export type EditMessageMutation = (
+  { __typename?: 'Mutation' }
+  & { editMessage?: Maybe<(
     { __typename?: 'Message' }
     & RegularMessageFragment
   )> }
@@ -539,6 +563,19 @@ export type DeletedMessageSubscription = (
   )> }
 );
 
+export type EditedMessageSubscriptionVariables = Exact<{
+  channelId: Scalars['String'];
+}>;
+
+
+export type EditedMessageSubscription = (
+  { __typename?: 'Subscription' }
+  & { editedMessage?: Maybe<(
+    { __typename?: 'Message' }
+    & RegularMessageFragment
+  )> }
+);
+
 export type NewChannelMessageSubscriptionVariables = Exact<{
   channelId: Scalars['String'];
 }>;
@@ -548,11 +585,7 @@ export type NewChannelMessageSubscription = (
   { __typename?: 'Subscription' }
   & { newChannelMessage?: Maybe<(
     { __typename?: 'Message' }
-    & Pick<Message, 'id' | 'text' | 'url' | 'filetype' | 'channelId' | 'createdAt' | 'updatedAt'>
-    & { user: (
-      { __typename?: 'User' }
-      & Pick<User, 'id' | 'username'>
-    ) }
+    & RegularMessageFragment
   )> }
 );
 
@@ -593,6 +626,7 @@ export const RegularMessageFragmentDoc = gql`
   url
   filetype
   channelId
+  edited
   user {
     ...RegularUser
   }
@@ -680,19 +714,10 @@ export type CreateChannelMutationOptions = Apollo.BaseMutationOptions<CreateChan
 export const CreateMessageDocument = gql`
     mutation CreateMessage($channelId: String!, $text: String!, $teamId: String!) {
   createMessage(channelId: $channelId, text: $text, teamId: $teamId) {
-    id
-    text
-    url
-    filetype
-    channelId
-    user {
-      ...RegularUser
-    }
-    createdAt
-    updatedAt
+    ...RegularMessage
   }
 }
-    ${RegularUserFragmentDoc}`;
+    ${RegularMessageFragmentDoc}`;
 export type CreateMessageMutationFn = Apollo.MutationFunction<CreateMessageMutation, CreateMessageMutationVariables>;
 
 /**
@@ -797,6 +822,39 @@ export function useDeleteMessageMutation(baseOptions?: Apollo.MutationHookOption
 export type DeleteMessageMutationHookResult = ReturnType<typeof useDeleteMessageMutation>;
 export type DeleteMessageMutationResult = Apollo.MutationResult<DeleteMessageMutation>;
 export type DeleteMessageMutationOptions = Apollo.BaseMutationOptions<DeleteMessageMutation, DeleteMessageMutationVariables>;
+export const EditMessageDocument = gql`
+    mutation EditMessage($messageId: String!, $text: String!) {
+  editMessage(messageId: $messageId, text: $text) {
+    ...RegularMessage
+  }
+}
+    ${RegularMessageFragmentDoc}`;
+export type EditMessageMutationFn = Apollo.MutationFunction<EditMessageMutation, EditMessageMutationVariables>;
+
+/**
+ * __useEditMessageMutation__
+ *
+ * To run a mutation, you first call `useEditMessageMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useEditMessageMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [editMessageMutation, { data, loading, error }] = useEditMessageMutation({
+ *   variables: {
+ *      messageId: // value for 'messageId'
+ *      text: // value for 'text'
+ *   },
+ * });
+ */
+export function useEditMessageMutation(baseOptions?: Apollo.MutationHookOptions<EditMessageMutation, EditMessageMutationVariables>) {
+        return Apollo.useMutation<EditMessageMutation, EditMessageMutationVariables>(EditMessageDocument, baseOptions);
+      }
+export type EditMessageMutationHookResult = ReturnType<typeof useEditMessageMutation>;
+export type EditMessageMutationResult = Apollo.MutationResult<EditMessageMutation>;
+export type EditMessageMutationOptions = Apollo.BaseMutationOptions<EditMessageMutation, EditMessageMutationVariables>;
 export const InvitePeopleDocument = gql`
     mutation InvitePeople($email: String!, $teamId: String!) {
   addTeamMember(email: $email, teamId: $teamId) {
@@ -1176,23 +1234,42 @@ export function useDeletedMessageSubscription(baseOptions: Apollo.SubscriptionHo
       }
 export type DeletedMessageSubscriptionHookResult = ReturnType<typeof useDeletedMessageSubscription>;
 export type DeletedMessageSubscriptionResult = Apollo.SubscriptionResult<DeletedMessageSubscription>;
+export const EditedMessageDocument = gql`
+    subscription EditedMessage($channelId: String!) {
+  editedMessage(channelId: $channelId) {
+    ...RegularMessage
+  }
+}
+    ${RegularMessageFragmentDoc}`;
+
+/**
+ * __useEditedMessageSubscription__
+ *
+ * To run a query within a React component, call `useEditedMessageSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useEditedMessageSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useEditedMessageSubscription({
+ *   variables: {
+ *      channelId: // value for 'channelId'
+ *   },
+ * });
+ */
+export function useEditedMessageSubscription(baseOptions: Apollo.SubscriptionHookOptions<EditedMessageSubscription, EditedMessageSubscriptionVariables>) {
+        return Apollo.useSubscription<EditedMessageSubscription, EditedMessageSubscriptionVariables>(EditedMessageDocument, baseOptions);
+      }
+export type EditedMessageSubscriptionHookResult = ReturnType<typeof useEditedMessageSubscription>;
+export type EditedMessageSubscriptionResult = Apollo.SubscriptionResult<EditedMessageSubscription>;
 export const NewChannelMessageDocument = gql`
     subscription NewChannelMessage($channelId: String!) {
   newChannelMessage(channelId: $channelId) {
-    id
-    text
-    url
-    filetype
-    channelId
-    user {
-      id
-      username
-    }
-    createdAt
-    updatedAt
+    ...RegularMessage
   }
 }
-    `;
+    ${RegularMessageFragmentDoc}`;
 
 /**
  * __useNewChannelMessageSubscription__

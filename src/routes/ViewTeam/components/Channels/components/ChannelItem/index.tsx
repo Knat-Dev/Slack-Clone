@@ -1,4 +1,4 @@
-import { BoxProps, Text } from '@chakra-ui/react';
+import { Box, BoxProps, Flex, Text } from '@chakra-ui/react';
 import React, { FC } from 'react';
 import { useHistory, useRouteMatch } from 'react-router';
 import {
@@ -13,6 +13,7 @@ interface Props {
   setSelectedChannel: (selectedChannel: RegularChannelFragment) => void;
   selectedChannel: RegularChannelFragment | null | undefined;
   selectedTeamId: string | undefined;
+  closeDrawer?: () => void;
 }
 
 export const ChannelItem: FC<Props> = ({
@@ -21,11 +22,13 @@ export const ChannelItem: FC<Props> = ({
   setSelectedChannel,
   selectedChannel,
   selectedTeamId,
+  closeDrawer,
 }) => {
   const history = useHistory();
   const match = useRouteMatch<{ teamId: string }>();
   if (!channel) return null;
   const handleSelectChannel = () => {
+    if (closeDrawer) closeDrawer();
     setSelectedChannel(channel);
     history.push(`/view-team/${selectedTeamId}/${channel.id}`);
   };
@@ -37,10 +40,14 @@ export const ChannelItem: FC<Props> = ({
         selectedChannel?.id === channel.id ? '#243855' : undefined
       }
     >
-      <Text as="span" fontWeight="bold" mr={4}>
-        #
-      </Text>
-      {channel.name}
+      <Flex>
+        <Text as="span" fontWeight="bold" mr={4}>
+          #
+        </Text>
+        <Text isTruncated textOverflow="ellipsis">
+          {channel.name}
+        </Text>
+      </Flex>
     </ListItem>
   );
 };

@@ -1,15 +1,5 @@
 subscription NewChannelMessage($channelId: String!) {
   newChannelMessage(channelId: $channelId) {
-    id
-    text
-    url
-    filetype
-    channelId
-    user {
-      id
-      username
-    }
-    createdAt
-    updatedAt
+    ...RegularMessage
   }
 }

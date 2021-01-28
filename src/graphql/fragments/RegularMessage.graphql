@@ -4,6 +4,7 @@ fragment RegularMessage on Message {
   url
   filetype
   channelId
+  edited
   user {
     ...RegularUser
   }

@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { useDisclosure } from '@chakra-ui/react';
-import { motion } from 'framer-motion';
-import decode from 'jwt-decode';
+import { Grid, useDisclosure } from '@chakra-ui/react';
 import React, { FC } from 'react';
 import {
   AddChannelModal,
@@ -22,6 +20,7 @@ interface Props {
   selectedTeam: RegularTeamFragment | null;
   setSelectedTeam: (selectedTeam: RegularTeamFragment) => void;
   me: MeQuery['me'];
+  isDrawer?: () => void;
 }
 
 export const Sidebar: FC<Props> = ({
@@ -30,6 +29,7 @@ export const Sidebar: FC<Props> = ({
   selectedTeam,
   setSelectedTeam,
   me,
+  isDrawer,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
@@ -43,64 +43,79 @@ export const Sidebar: FC<Props> = ({
     onClose: onInviteClose,
   } = useDisclosure();
 
-  const getUsername = (): string => {
-    const token = sessionStorage.getItem('sid');
-    const decoded = decode<{ username: string }>(token || '');
-    return decoded.username;
-  };
-
-  const getUserId = (): string => {
-    const token = sessionStorage.getItem('sid');
-    const decoded = decode<{ userId: string }>(token || '');
-    return decoded.userId;
-  };
   const { loading } = useMeQuery();
 
   if (loading || !selectedTeam) return null;
 
   return (
     <>
-      <Teams
-        selectedId={selectedTeam.id}
-        setSelectedTeam={setSelectedTeam}
+      {!isDrawer ? (
+        <>
+          <Teams
+            selectedId={selectedTeam.id}
+            setSelectedTeam={setSelectedTeam}
+            setSelectedChannel={setSelectedChannel}
+            selectedChannelId={selectedChannel?.id}
+            teams={me.teams}
+          />
+          <Channels
+            currentUserName={me.username}
+            onOpen={onOpen}
+            selectedChannel={selectedChannel}
+            setSelectedChannel={setSelectedChannel}
+            selectedTeam={selectedTeam}
+            teamName={selectedTeam?.name}
+            channels={selectedTeam?.channels.filter((channel) => !channel.dm)}
+            dmChannels={selectedTeam?.channels.filter((channel) => channel.dm)}
+            onInviteOpen={onInviteOpen}
+            onDirectMessageOpen={onDirectMessageOpen}
+          />
+        </>
+      ) : (
+        <Grid templateColumns="60px 240px" maxW="300px">
+          <Teams
+            selectedId={selectedTeam.id}
+            setSelectedTeam={setSelectedTeam}
+            setSelectedChannel={setSelectedChannel}
+            selectedChannelId={selectedChannel?.id}
+            teams={me.teams}
+            closeDrawer={isDrawer}
+          />
+          <Channels
+            currentUserName={me.username}
+            onOpen={onOpen}
+            selectedChannel={selectedChannel}
+            setSelectedChannel={setSelectedChannel}
+            selectedTeam={selectedTeam}
+            teamName={selectedTeam?.name}
+            channels={selectedTeam?.channels.filter((channel) => !channel.dm)}
+            dmChannels={selectedTeam?.channels.filter((channel) => channel.dm)}
+            onInviteOpen={onInviteOpen}
+            onDirectMessageOpen={onDirectMessageOpen}
+            closeDrawer={isDrawer}
+          />
+        </Grid>
+      )}
+
+      <DirectMessageModal
+        isOpen={directMessageOpen}
+        onClose={onDirectMessageClose}
+        selectedTeamId={selectedTeam.id}
         setSelectedChannel={setSelectedChannel}
-        selectedChannelId={selectedChannel?.id}
-        teams={me.teams}
+        currentUserId={me.id}
       />
-      <Channels
-        currentUserName={me.username}
-        onOpen={onOpen}
-        selectedChannel={selectedChannel}
+      <AddChannelModal
+        isOpen={isOpen}
+        onClose={onClose}
+        selectedTeamId={selectedTeam.id}
         setSelectedChannel={setSelectedChannel}
-        selectedTeam={selectedTeam}
-        teamName={selectedTeam?.name}
-        username={getUsername()}
-        channels={selectedTeam?.channels.filter((channel) => !channel.dm)}
-        dmChannels={selectedTeam?.channels.filter((channel) => channel.dm)}
-        onInviteOpen={onInviteOpen}
-        onDirectMessageOpen={onDirectMessageOpen}
+        currentUserId={me.id}
       />
-      <>
-        <DirectMessageModal
-          isOpen={directMessageOpen}
-          onClose={onDirectMessageClose}
-          selectedTeamId={selectedTeam.id}
-          setSelectedChannel={setSelectedChannel}
-          currentUserId={getUserId()}
-        />
-        <AddChannelModal
-          isOpen={isOpen}
-          onClose={onClose}
-          selectedTeamId={selectedTeam.id}
-          setSelectedChannel={setSelectedChannel}
-          currentUserId={getUserId()}
-        />
-        <InvitePeopleModal
-          isOpen={inviteOpen}
-          onClose={onInviteClose}
-          selectedTeamId={selectedTeam.id}
-        />
-      </>
+      <InvitePeopleModal
+        isOpen={inviteOpen}
+        onClose={onInviteClose}
+        selectedTeamId={selectedTeam.id}
+      />
     </>
   );
 };

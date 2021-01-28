@@ -1,0 +1,5 @@
+subscription EditedMessage($channelId: String!) {
+  editedMessage(channelId: $channelId) {
+    ...RegularMessage
+  }
+}

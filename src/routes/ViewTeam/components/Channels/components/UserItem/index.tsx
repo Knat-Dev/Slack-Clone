@@ -15,6 +15,7 @@ interface Props {
   selectedTeamId: string;
   currentUserName: string;
   isOnline?: boolean;
+  closeDrawer?: () => void;
 }
 
 export const UserItem: FC<Props> = ({
@@ -25,10 +26,12 @@ export const UserItem: FC<Props> = ({
   selectedTeamId,
   currentUserName,
   isOnline,
+  closeDrawer,
 }) => {
   const history = useHistory();
 
   const handleSelectChannel = () => {
+    if (closeDrawer) closeDrawer();
     setSelectedChannel(channel);
     history.push(`/view-team/${selectedTeamId}/user/${channel.id}`);
   };
