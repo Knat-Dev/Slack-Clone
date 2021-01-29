@@ -19,7 +19,6 @@ interface Props {
     } & Pick<Channel, 'id' | 'name' | 'public'>
   ) => void;
   selectedChannelId: string | undefined;
-  closeDrawer?: () => void;
 }
 
 export const Teams: FC<Props> = ({
@@ -28,7 +27,6 @@ export const Teams: FC<Props> = ({
   selectedId,
   setSelectedChannel,
   selectedChannelId,
-  closeDrawer,
 }) => {
   return (
     <Flex

@@ -1,10 +1,7 @@
 import { Box, BoxProps, Flex, Text } from '@chakra-ui/react';
 import React, { FC } from 'react';
 import { useHistory } from 'react-router-dom';
-import {
-  RegularChannelFragment,
-  RegularUserStatusFragment,
-} from '../../../../../../graphql/generated';
+import { RegularChannelFragment } from '../../../../../../graphql/generated';
 import { ListItem } from '../ListItem';
 
 interface Props {

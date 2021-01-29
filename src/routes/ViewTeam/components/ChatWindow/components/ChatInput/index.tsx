@@ -1,37 +1,92 @@
-import { IconButton, InputGroup, InputRightElement } from '@chakra-ui/react';
+import { useApolloClient } from '@apollo/client';
 import { randomBytes } from 'crypto';
 import { Form, Formik } from 'formik';
-import React, { FC, useRef } from 'react';
-import { MdSend } from 'react-icons/md';
-import { AutoResizeTextarea } from '../../../../../../Components/AutoResizeTextarea';
+import React, { FC, useEffect } from 'react';
 import {
   MessagesDocument,
   MessagesQuery,
+  NewTypingUserDocument,
+  NewTypingUserSubscription,
   RegularChannelFragment,
   useCreateMessageMutation,
   useMessagesQuery,
+  useTypingUsersQuery,
 } from '../../../../../../graphql/generated';
+import { Input } from './components';
+import { TypingIndicator } from './components/TypingIndicator';
 interface Props {
   selectedChannel: RegularChannelFragment;
   selectedTeamId: string | undefined;
   currentUserName: string;
   currentUserId: string;
+  inputRef: React.MutableRefObject<HTMLTextAreaElement | null>;
 }
 export const ChatInput: FC<Props> = ({
   selectedChannel,
   selectedTeamId,
   currentUserName,
   currentUserId,
+  inputRef,
 }) => {
+  const {
+    data: typingUsersData,
+    loading: typingUsersLoading,
+    subscribeToMore,
+  } = useTypingUsersQuery({
+    variables: { channelId: selectedChannel?.id },
+  });
   const [createMessage] = useCreateMessageMutation();
-  const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const { data } = useMessagesQuery({
     variables: { channelId: selectedChannel.id, cursor: null },
   });
-  if (!selectedChannel || !selectedTeamId) return null;
 
+  const client = useApolloClient();
+  useEffect(() => {
+    client.cache.evict({
+      fieldName: 'typingUsers',
+    });
+  }, [selectedChannel.id]);
+
+  useEffect(() => {
+    return subscribeToMore({
+      document: NewTypingUserDocument,
+      variables: { channelId: selectedChannel.id },
+      updateQuery: (prev, { subscriptionData }) => {
+        const newTypingUser = (subscriptionData.data as NewTypingUserSubscription)
+          .newTypingUser;
+        if (!newTypingUser) return prev;
+        const prevWithoutNewUser = prev.typingUsers.filter(
+          (user) => user.id !== newTypingUser.id && user.id !== currentUserId
+        );
+        if (newTypingUser.typing === true)
+          return Object.assign({
+            typingUsers: [
+              ...prevWithoutNewUser,
+              {
+                __typename: 'TypingUser',
+                id: newTypingUser.id,
+                username: newTypingUser.username,
+              },
+            ],
+          });
+        else {
+          return Object.assign({
+            typingUsers: prevWithoutNewUser.filter(
+              (user) => user.id !== newTypingUser.id
+            ),
+          });
+        }
+      },
+    });
+  }, [selectedChannel.id]);
+
+  if (!selectedTeamId) return null;
+
+  const typingUsers = typingUsersData?.typingUsers.filter(
+    (user) => user.id !== currentUserId
+  );
   const messages = data?.messages.page;
-  if (!messages) return null;
+  if (!messages || typingUsersLoading) return null;
   return (
     <Formik
       initialValues={{ text: '' }}
@@ -99,58 +154,15 @@ export const ChatInput: FC<Props> = ({
         });
       }}
     >
-      {({ isSubmitting, handleBlur, values, handleChange, handleSubmit }) => (
+      {() => (
         <Form>
-          <InputGroup alignItems="center">
-            <InputRightElement bottom="0" top="auto">
-              <IconButton
-                isLoading={isSubmitting}
-                colorScheme="blue"
-                aria-label="Send message"
-                size="sm"
-                type="submit"
-              >
-                <MdSend />
-              </IconButton>
-            </InputRightElement>
-            <AutoResizeTextarea
-              ref={inputRef}
-              autoFocus
-              onKeyPress={(e) => {
-                if (!e.shiftKey && e.key === 'Enter' && values.text.trim()) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  return handleSubmit();
-                }
-              }}
-              name="text"
-              value={values.text}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              placeholder={`Message #${selectedChannel.name
-                .split(', ')
-                .filter((name) => name !== currentUserName)}`}
-            />
-            {/* <Textarea
-              minH="40px"
-              px="40px"
-              maxRows={2}
-              resize="none"
-              ref={inputRef}
-              backgroundColor="white"
-              value={values.text}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              autoFocus
-              name="text"
-              type="text"
-              placeholder={`Message #${selectedChannel.name
-                .split(', ')
-                .filter((name) => name !== currentUserName)}`}
-              autoComplete="off"
-              as={ResizeTextarea as typeof TextareaAutosize & 'symbol'}
-            /> */}
-          </InputGroup>
+          <Input
+            currentUserName={currentUserName}
+            currentUserId={currentUserId}
+            inputRef={inputRef}
+            selectedChannel={selectedChannel}
+          />
+          <TypingIndicator typingUsers={typingUsers} />
         </Form>
       )}
     </Formik>

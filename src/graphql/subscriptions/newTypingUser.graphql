@@ -1,0 +1,7 @@
+subscription NewTypingUser($channelId: String!) {
+  newTypingUser(channelId: $channelId) {
+    id
+    username
+    typing
+  }
+}

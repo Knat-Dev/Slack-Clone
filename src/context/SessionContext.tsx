@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { initialSession, Session } from './session';
-import React from 'react';
 
 export const SessionContext = createContext<
   [Session, (session: Session) => void]

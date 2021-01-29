@@ -18,7 +18,6 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { Form, Formik } from 'formik';
-import { motion } from 'framer-motion';
 import React, { FC } from 'react';
 import { useHistory } from 'react-router';
 import Select from 'react-select';

@@ -79,7 +79,6 @@ export const Sidebar: FC<Props> = ({
             setSelectedChannel={setSelectedChannel}
             selectedChannelId={selectedChannel?.id}
             teams={me.teams}
-            closeDrawer={isDrawer}
           />
           <Channels
             currentUserName={me.username}

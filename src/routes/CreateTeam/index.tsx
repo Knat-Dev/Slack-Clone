@@ -12,12 +12,10 @@ import {
 } from '../../graphql/generated';
 import { toErrorMap } from '../../utils/toErrorMap';
 
-export const CreateTeam: FC<RouteComponentProps> = ({ history, match }) => {
+export const CreateTeam: FC<RouteComponentProps> = ({ history }) => {
   const [createTeam] = useCreateTeamMutation();
   const { loading } = useMeQuery();
-  //   useEffect(() => {
-  //     if (!getAccessToken()) authenticateRequest(history, match);
-  //   }, []);
+
   if (loading) return null;
   return (
     <FullPage>

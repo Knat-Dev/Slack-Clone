@@ -23,7 +23,6 @@ export const TeamItem: FC<Props> = ({
   setSelectedTeam,
   selectedId,
   setSelectedChannel,
-  selectedChannelId,
 }) => {
   const history = useHistory();
   return (

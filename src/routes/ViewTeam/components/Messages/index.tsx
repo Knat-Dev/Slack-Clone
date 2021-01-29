@@ -221,6 +221,19 @@ export const Messages: FC<Props> = ({ channel }) => {
   return (
     <Flex
       id="scrollableDiv"
+      css={{
+        '&::-webkit-scrollbar': {
+          width: '10px',
+        },
+        '&::-webkit-scrollbar-track': {
+          WebkitBoxShadow: 'inset 0 0 2px rgba(0,0,0,0.3)',
+          backgroundColor: '#F5F5F5',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: '#2B6CBC',
+          borderRadius: 8,
+        },
+      }}
       direction="column-reverse"
       flexGrow={1}
       overflow="auto"

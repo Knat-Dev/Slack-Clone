@@ -1,11 +1,4 @@
-import {
-  Flex,
-  ButtonProps,
-  FlexProps,
-  Tooltip,
-  Button,
-  TooltipProps,
-} from '@chakra-ui/react';
+import { Flex, FlexProps, Tooltip, TooltipProps } from '@chakra-ui/react';
 import React, { FC } from 'react';
 import { IconType } from 'react-icons';
 

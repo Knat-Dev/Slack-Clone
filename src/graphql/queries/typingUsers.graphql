@@ -1,0 +1,6 @@
+query TypingUsers($channelId: String!) {
+  typingUsers(channelId: $channelId) {
+    id
+    username
+  }
+}

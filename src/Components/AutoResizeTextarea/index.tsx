@@ -1,6 +1,6 @@
 /* eslint-disable react/display-name */
 import { Textarea, TextareaProps } from '@chakra-ui/react';
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   default as ResizeTextarea,
   default as TextareaAutosize,

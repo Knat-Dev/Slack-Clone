@@ -1,23 +1,23 @@
 import {
   Box,
-  Flex,
-  InputGroup,
-  Input,
-  InputRightAddon,
   ButtonGroup,
+  Flex,
+  Input,
+  InputGroup,
+  InputRightAddon,
   Text,
 } from '@chakra-ui/react';
-import { Formik, Form } from 'formik';
+import { Form, Formik } from 'formik';
 import React, { FC, useEffect, useRef } from 'react';
-import { MdSave, MdClose } from 'react-icons/md';
-import { CircleButton } from '../../../../../../../../Components';
-import { RegularMessageFragment } from '../../../../../../../../graphql/generated';
+import { MdClose, MdSave } from 'react-icons/md';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { duotoneDark as style } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import {
   default as ResizeTextarea,
   default as TextareaAutosize,
 } from 'react-textarea-autosize';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { duotoneDark as style } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { CircleButton } from '../../../../../../../../Components';
+import { RegularMessageFragment } from '../../../../../../../../graphql/generated';
 
 interface Props {
   editing: boolean;
@@ -34,11 +34,11 @@ export const TextMessage: FC<Props> = ({
 }) => {
   const codeBlockRegex = /```([a-zA-Z]*[\s\S]*?)\n?([a-zA-Z]*[\s\S]*?)\n?```/;
   const inputRef = useRef<HTMLInputElement | null>(null);
+
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
       const len = inputRef.current?.value.length;
-      console.log(len);
 
       inputRef.current.setSelectionRange(len, len);
     }
@@ -63,7 +63,6 @@ export const TextMessage: FC<Props> = ({
     if (!message.text) return null;
     const codeBlockData = message.text.split(codeBlockRegex);
 
-    console.log(codeBlockData[1]);
     return (
       <SyntaxHighlighter language={codeBlockData[1]} style={style}>
         {codeBlockData[2]}
@@ -79,14 +78,18 @@ export const TextMessage: FC<Props> = ({
             {message.text.split('\n').map((line, i, arr) =>
               i === arr.length - 1 ? (
                 <Flex key={line + '-' + i} py="0.1rem">
-                  <Text lineHeight="24px" color="#40455e">
+                  <Text
+                    lineHeight="24px"
+                    color="#40455e"
+                    style={{ unicodeBidi: 'plaintext' }}
+                  >
                     {line}
+                    {edited}
                   </Text>
-                  {edited}
                 </Flex>
               ) : (
                 <Box key={line + '-' + i} py="0.1rem">
-                  <Text>{line}</Text>
+                  <Text style={{ unicodeBidi: 'plaintext' }}>{line}</Text>
                 </Box>
               )
             )}
@@ -96,10 +99,14 @@ export const TextMessage: FC<Props> = ({
         )
       ) : (
         <Flex py="0.1rem">
-          <Text lineHeight="24px" color="#40455e">
+          <Text
+            lineHeight="24px"
+            color="#40455e"
+            style={{ unicodeBidi: 'plaintext' }}
+          >
             {message.text}
+            {edited}
           </Text>
-          {edited}
         </Flex>
       )}
     </Box>

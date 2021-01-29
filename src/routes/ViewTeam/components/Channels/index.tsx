@@ -1,18 +1,17 @@
 import {
   Box,
   List,
+  Menu,
   MenuButton,
   MenuItem,
   MenuList,
   Text,
-  Menu,
 } from '@chakra-ui/react';
-import React, { FC, useEffect } from 'react';
+import React, { FC } from 'react';
 import { MdAdd } from 'react-icons/md';
 import { CircleIconButton } from '../../../../Components';
 import { useSessionContext } from '../../../../context/SessionContext';
 import {
-  NewUserStatusDocument,
   RegularChannelFragment,
   RegularTeamFragment,
   useLogoutMutation,

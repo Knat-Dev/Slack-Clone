@@ -1,6 +1,5 @@
 import React, { FC } from 'react';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
-import { Navbar } from '../Components';
+import { BrowserRouter, Switch } from 'react-router-dom';
 import { useSessionContext } from '../context/SessionContext';
 import { CreateTeam } from './CreateTeam';
 // Routes

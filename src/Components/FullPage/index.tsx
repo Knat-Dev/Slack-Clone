@@ -8,7 +8,7 @@ interface Props extends FlexProps {
 export const FullPage: FC<Props> = ({ children, centered = true }) => {
   return (
     <Flex
-      h="calc(100vh)"
+      h="100vh"
       justify={centered ? 'center' : undefined}
       align={centered ? 'center' : undefined}
     >

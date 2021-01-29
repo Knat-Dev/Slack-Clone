@@ -1,0 +1,7 @@
+mutation SetUserTyping($channelId: String!, $isTyping: Boolean!) {
+  setUserTyping(channelId: $channelId, isTyping: $isTyping) {
+    id
+    username
+    typing
+  }
+}

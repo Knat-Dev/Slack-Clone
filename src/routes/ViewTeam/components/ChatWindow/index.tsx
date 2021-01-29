@@ -4,7 +4,6 @@ import {
   Drawer,
   DrawerBody,
   DrawerContent,
-  DrawerHeader,
   DrawerOverlay,
   Flex,
   Text,
@@ -47,9 +46,10 @@ export const ChatWindow: FC<Props> = ({
   currentUserId,
   me,
 }) => {
+  // Mobile Drawer disclosure
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { loading } = useMeQuery();
-  const scrollable = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const { subscribeToMore } = useUserStatusesQuery({
     variables: { teamId: selectedTeamId },
   });
@@ -66,7 +66,6 @@ export const ChatWindow: FC<Props> = ({
       variables: { teamId: selectedTeamId },
       updateQuery: (prev, { subscriptionData }) => {
         if (!subscriptionData.data) return prev;
-        console.log(subscriptionData.data);
         const newStatus = (subscriptionData.data as NewUserStatusSubscription)
           .newUserStatus;
         if (newStatus)
@@ -113,8 +112,9 @@ export const ChatWindow: FC<Props> = ({
         />
 
         <Messages channel={selectedChannel} />
-        <Box p={2}>
+        <Box pt={2} px={2}>
           <ChatInput
+            inputRef={inputRef}
             currentUserId={currentUserId}
             currentUserName={currentUserName}
             selectedChannel={selectedChannel}
@@ -126,7 +126,8 @@ export const ChatWindow: FC<Props> = ({
         placement="left"
         onClose={onClose}
         isOpen={isOpen}
-        returnFocusOnClose={false}
+        returnFocusOnClose={true}
+        finalFocusRef={inputRef}
         onOverlayClick={() => onClose()}
       >
         <DrawerOverlay>

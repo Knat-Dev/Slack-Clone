@@ -20,11 +20,7 @@ import {
   SessionContextProvider,
   useSessionContext,
 } from './context/SessionContext';
-import {
-  Message,
-  PaginatedMessages,
-  RegularUserStatusFragment,
-} from './graphql/generated';
+import { PaginatedMessages, TypingUser } from './graphql/generated';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
 import Routes from './routes';
@@ -130,6 +126,12 @@ const client = new ApolloClient({
               return {
                 ...incoming,
               };
+            },
+          },
+          typingUsers: {
+            keyArgs: ['channelId'],
+            merge(existing: TypingUser[] | undefined, incoming: TypingUser[]) {
+              return incoming;
             },
           },
         },
